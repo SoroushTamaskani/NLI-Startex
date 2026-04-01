@@ -1,0 +1,5 @@
+{
+  "name": "NLI (No Lie AI)",
+  "description": "NLI (No Lie AI) - A specialized AI for multimodal information verification, specializing in audio, video, and text fact-checking.",
+  "requestFramePermissions": ["microphone"]
+}
