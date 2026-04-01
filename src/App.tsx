@@ -33,8 +33,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 import { Message, Attachment, GroundingSource, ChatSession } from './types';
 import { verifyInformation } from './services/gemini';
+import EducationalSection from './components/EducationalSection';
 
 import mammoth from 'mammoth';
+import { GraduationCap } from 'lucide-react';
 
 export default function App() {
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
@@ -69,6 +71,7 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isEducationalOpen, setIsEducationalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [hasQuotaError, setHasQuotaError] = useState(false);
   
@@ -482,6 +485,13 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsEducationalOpen(true)}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#ffd670] text-[#4338ca] border-2 border-[#ffd670] hover:bg-[#ffd670]/80 transition-all bubble-shadow font-display font-bold text-sm"
+            >
+              <GraduationCap size={20} />
+              Truth Academy 🎓
+            </button>
             <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-[#99ff88]/20 border-2 border-[#99ff88]">
               <div className="w-3 h-3 rounded-full bg-[#99ff88] animate-pulse" />
               <span className="text-xs font-bold text-[#4338ca]">Ready to Help! ✨</span>
@@ -845,6 +855,12 @@ export default function App() {
           </div>
         </footer>
       </div>
+
+      <AnimatePresence>
+        {isEducationalOpen && (
+          <EducationalSection onClose={() => setIsEducationalOpen(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

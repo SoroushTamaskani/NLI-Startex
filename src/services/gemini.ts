@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { Attachment } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
@@ -7,22 +7,11 @@ export async function verifyInformation(
   text: string,
   attachments: Attachment[] = []
 ) {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-3.1-pro-preview";
   
   const promptText = text.trim() || "Analyze the attached media for factual accuracy and signs of AI generation.";
   
-  const parts: any[] = [{ text: `You are NLI (No Lie AI), a specialized AI for verifying information across multiple modalities. 
-  
-  Your task is to analyze the provided input (text, links, images, audio, video, or documents) and determine if the information presented is true, false, or misleading.
-  
-  CRITICAL TASKS:
-  1. SOURCE CREDIBILITY: For any links or referenced sources, provide a credibility score from 0 to 100.
-  2. AI DETECTION: Analyze all inputs to determine if they are likely AI-generated.
-  
-  For IMAGE/VIDEO/AUDIO: Check for deepfake artifacts, voice cloning markers, or digital manipulation.
-  For TEXT/DOCUMENTS: Verify claims using Google Search.
-  
-  User Input: ${promptText}` }];
+  const parts: any[] = [{ text: `User Input: ${promptText}` }];
 
   for (const attachment of attachments) {
     // Only send supported binary types to inlineData
@@ -61,7 +50,26 @@ export async function verifyInformation(
       model,
       contents: [{ role: 'user', parts }],
       config: {
+        systemInstruction: `You are NLI (No Lie AI), a world-class forensic analyst and fact-checker. 
+Your mission is to detect AI-generated content and verify factual accuracy across all media types.
+
+AI DETECTION GUIDELINES:
+- IMAGES: Look for anatomical inconsistencies (fingers, teeth), unnatural textures, lighting mismatches, and background warping.
+- VIDEO: Check for lip-sync issues, unnatural blinking, "shimmering" artifacts, and inconsistent shadows.
+- AUDIO: Listen for robotic cadence, lack of natural breathing, and spectral inconsistencies.
+- TEXT: Identify repetitive structures, lack of specific personal insight, and overly polished but vacuous phrasing.
+
+FACT-CHECKING GUIDELINES:
+- Use Google Search to verify specific claims, dates, and figures.
+- Cross-reference multiple reliable sources.
+- Assign a credibility score (0-100) based on source reliability.
+
+Provide a definitive verdict (True, False, or Misleading) and a detailed breakdown of your findings.`,
         tools: [{ googleSearch: {} }],
+        thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH },
+        temperature: 0.1,
+        topK: 40,
+        topP: 0.95,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
