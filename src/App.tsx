@@ -27,7 +27,20 @@ import {
   Trash2,
   Menu,
   Copy,
-  Check
+  Check,
+  User,
+  Bot,
+  Zap,
+  Clock,
+  ThumbsUp,
+  ThumbsDown,
+  GraduationCap,
+  ZoomIn,
+  ZoomOut,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
@@ -36,7 +49,159 @@ import { verifyInformation } from './services/gemini';
 import EducationalSection from './components/EducationalSection';
 
 import mammoth from 'mammoth';
-import { GraduationCap } from 'lucide-react';
+
+const DocumentPreview = ({ attachment, onExpand }: { attachment: Attachment, onExpand?: () => void }) => {
+  const [zoom, setZoom] = useState(100);
+  const [page, setPage] = useState(0);
+  const pageSize = 3000; // characters per page
+
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = attachment.url;
+    link.download = attachment.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  if (attachment.mimeType === 'application/pdf') {
+    return (
+      <div className="w-full h-[500px] rounded-2xl overflow-hidden border-4 border-[#fef3c7] bg-white shadow-lg flex flex-col">
+        <div className="p-3 bg-[#fff7ed] border-b-2 border-[#fef3c7] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText size={18} className="text-[#f97316]" />
+            <span className="text-xs font-bold text-[#4338ca] truncate max-w-[200px]">{attachment.name}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleDownload}
+              className="p-1.5 hover:bg-[#ffedd5] rounded-lg text-[#f97316] transition-colors"
+              title="Download"
+            >
+              <Download size={16} />
+            </button>
+            {onExpand && (
+              <button 
+                onClick={onExpand}
+                className="p-1.5 hover:bg-[#ffedd5] rounded-lg text-[#f97316] transition-colors"
+                title="Expand"
+              >
+                <Maximize2 size={16} />
+              </button>
+            )}
+            <div className="px-3 py-1 bg-[#ffd670] rounded-full text-[10px] font-bold text-[#4338ca] uppercase tracking-widest">
+              PDF
+            </div>
+          </div>
+        </div>
+        <iframe 
+          src={attachment.url} 
+          className="w-full flex-1 border-none"
+          title={attachment.name}
+        />
+      </div>
+    );
+  }
+
+  if (attachment.textContent) {
+    const totalPages = Math.ceil(attachment.textContent.length / pageSize);
+    const currentContent = attachment.textContent.slice(page * pageSize, (page + 1) * pageSize);
+
+    return (
+      <div className="w-full max-w-2xl rounded-2xl overflow-hidden border-4 border-[#fef3c7] bg-white shadow-lg flex flex-col">
+        <div className="p-3 bg-[#fff7ed] border-b-2 border-[#fef3c7] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText size={18} className="text-[#f97316]" />
+            <span className="text-xs font-bold text-[#4338ca] truncate max-w-[200px]">{attachment.name}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleDownload}
+              className="p-1.5 hover:bg-[#ffedd5] rounded-lg text-[#f97316] transition-colors"
+              title="Download"
+            >
+              <Download size={16} />
+            </button>
+            {onExpand && (
+              <button 
+                onClick={onExpand}
+                className="p-1.5 hover:bg-[#ffedd5] rounded-lg text-[#f97316] transition-colors"
+                title="Expand"
+              >
+                <Maximize2 size={16} />
+              </button>
+            )}
+            <div className="w-px h-4 bg-[#fef3c7] mx-1" />
+            <button 
+              onClick={() => setZoom(prev => Math.max(50, prev - 10))}
+              className="p-1.5 hover:bg-[#ffedd5] rounded-lg text-[#f97316] transition-colors"
+              title="Zoom Out"
+            >
+              <ZoomOut size={16} />
+            </button>
+            <span className="text-[10px] font-bold text-[#4338ca] w-8 text-center">{zoom}%</span>
+            <button 
+              onClick={() => setZoom(prev => Math.min(200, prev + 10))}
+              className="p-1.5 hover:bg-[#ffedd5] rounded-lg text-[#f97316] transition-colors"
+              title="Zoom In"
+            >
+              <ZoomIn size={16} />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 custom-scrollbar min-h-[300px] max-h-[600px]">
+          <div 
+            style={{ fontSize: `${(zoom / 100) * 13}px` }}
+            className="font-mono text-slate-700 leading-relaxed whitespace-pre-wrap"
+          >
+            {currentContent}
+          </div>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="p-3 bg-white border-t-2 border-[#fef3c7] flex items-center justify-center gap-4">
+            <button 
+              disabled={page === 0}
+              onClick={() => setPage(prev => prev - 1)}
+              className="p-2 hover:bg-[#fff7ed] disabled:opacity-30 rounded-xl text-[#f97316] transition-all"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span className="text-xs font-bold text-[#4338ca]">
+              Page {page + 1} of {totalPages}
+            </span>
+            <button 
+              disabled={page === totalPages - 1}
+              onClick={() => setPage(prev => prev + 1)}
+              className="p-2 hover:bg-[#fff7ed] disabled:opacity-30 rounded-xl text-[#f97316] transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-16 w-64 bg-slate-50 flex items-center px-4 gap-3 border border-slate-200 rounded-xl">
+      <div className="p-2 bg-amber-100 rounded-lg">
+        <FileText className="text-amber-600" size={20} />
+      </div>
+      <div className="flex flex-col min-w-0">
+        <span className="text-xs font-bold text-slate-700 truncate">{attachment.name}</span>
+        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Document</span>
+      </div>
+      <button 
+        onClick={handleDownload}
+        className="ml-auto p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors"
+      >
+        <Download size={16} />
+      </button>
+    </div>
+  );
+};
 
 export default function App() {
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
@@ -74,6 +239,7 @@ export default function App() {
   const [isEducationalOpen, setIsEducationalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [hasQuotaError, setHasQuotaError] = useState(false);
+  const [previewAttachment, setPreviewAttachment] = useState<Attachment | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -250,7 +416,10 @@ export default function App() {
             const base64 = event.target?.result as string;
             
             // If it's a text file, read the text content too
-            if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+            const textExtensions = ['txt', 'md', 'csv', 'json', 'xml', 'log', 'sql', 'js', 'ts', 'py', 'html', 'css'];
+            const isTextFile = file.type.startsWith('text/') || (extension && textExtensions.includes(extension));
+            
+            if (isTextFile) {
               const textReader = new FileReader();
               textReader.onload = (textEvent) => {
                 const text = textEvent.target?.result as string;
@@ -290,11 +459,30 @@ export default function App() {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedId(id);
+  const copyReport = (msg: Message) => {
+    const aiInfo = msg.aiDetection 
+      ? `\n\nAI Detection: ${msg.aiDetection.isAI ? 'Robot Made' : 'Human Made'} (${Math.round(msg.aiDetection.confidence)}%)\nReasoning: ${msg.aiDetection.reasoning}`
+      : '';
+    const credibility = msg.credibilityScore !== undefined 
+      ? `\n\nTrust Meter: ${msg.credibilityScore}%`
+      : '';
+    const report = `${msg.content}${credibility}${aiInfo}`;
+    
+    navigator.clipboard.writeText(report).then(() => {
+      setCopiedId(msg.id);
       setTimeout(() => setCopiedId(null), 2000);
     });
+  };
+
+  const handleFeedback = (msgId: string, feedback: 'correct' | 'incorrect') => {
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, userFeedback: feedback } : m));
+    // Also update in sessions
+    if (currentSessionId) {
+      setSessions(prev => prev.map(s => s.id === currentSessionId 
+        ? { ...s, messages: s.messages.map(m => m.id === msgId ? { ...m, userFeedback: feedback } : m) } 
+        : s
+      ));
+    }
   };
 
   const handleSend = async () => {
@@ -315,7 +503,8 @@ export default function App() {
     setIsVerifying(true);
 
     try {
-      const response = await verifyInformation(userMessage.content, userMessage.attachments);
+      const result = await verifyInformation(userMessage.content, userMessage.attachments);
+      const response = result.response;
       
       let data;
       try {
@@ -325,10 +514,10 @@ export default function App() {
           verdict: rawData.verdict || "Unknown",
           summary: rawData.summary || "No summary provided.",
           detailedAnalysis: rawData.detailedAnalysis || "No detailed analysis available.",
-          credibilityScore: rawData.credibilityScore || 0,
+          credibilityScore: Math.min(100, Math.max(0, rawData.credibilityScore || 0)),
           aiDetection: {
             isAI: rawData.isAI || false,
-            confidence: rawData.aiConfidence || 0,
+            confidence: Math.min(100, Math.max(0, rawData.aiConfidence || 0)),
             reasoning: rawData.aiReasoning || "No reasoning provided."
           },
           sources: rawData.sources || []
@@ -356,7 +545,9 @@ export default function App() {
         timestamp: new Date(),
         groundingSources,
         credibilityScore: data.credibilityScore,
-        aiDetection: data.aiDetection
+        aiDetection: data.aiDetection,
+        modelName: result.modelName,
+        processingTime: result.processingTime
       };
 
       const finalMessages = [...newMessages, assistantMessage];
@@ -559,24 +750,51 @@ export default function App() {
                 )}>
                   {/* Message Bubble */}
                   <div className={cn(
-                    "p-5 rounded-[32px] shadow-sm relative group/bubble bubble-shadow",
+                    "p-5 rounded-[32px] shadow-sm relative group/bubble bubble-shadow overflow-hidden",
                     msg.role === 'user' 
                       ? "bg-[#70d6ff] text-[#4338ca] rounded-tr-none border-2 border-[#70d6ff]" 
-                      : "bg-white text-[#4338ca] rounded-tl-none border-4 border-[#fef3c7]"
+                      : cn(
+                          "bg-white text-[#4338ca] rounded-tl-none border-4 border-[#fef3c7]",
+                          msg.aiDetection?.isAI ? "bg-pattern-ai" : "bg-pattern-human"
+                        )
                   )}>
                     {msg.role === 'assistant' && msg.id !== 'welcome' && (
-                      <button
-                        onClick={() => copyToClipboard(msg.content, msg.id)}
-                        className={cn(
-                          "absolute top-2 right-2 p-1.5 rounded-lg transition-all opacity-0 group-hover/bubble:opacity-100",
-                          copiedId === msg.id 
-                            ? "bg-emerald-500 text-white" 
-                            : "bg-white/80 text-slate-400 hover:text-slate-600 hover:bg-white shadow-sm border border-slate-200"
-                        )}
-                        title="Copy verification results"
-                      >
-                        {copiedId === msg.id ? <Check size={14} /> : <Copy size={14} />}
-                      </button>
+                      <div className="absolute top-2 right-2 flex items-center gap-2">
+                        <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl p-1 border border-[#fef3c7] shadow-sm">
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'correct')}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-all",
+                              msg.userFeedback === 'correct' ? "bg-[#99ff88] text-[#4338ca]" : "hover:bg-[#99ff88]/20 text-slate-400"
+                            )}
+                            title="Correct analysis"
+                          >
+                            <ThumbsUp size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'incorrect')}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-all",
+                              msg.userFeedback === 'incorrect' ? "bg-[#ff85a2] text-white" : "hover:bg-[#ff85a2]/20 text-slate-400"
+                            )}
+                            title="Incorrect analysis"
+                          >
+                            <ThumbsDown size={14} />
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => copyReport(msg)}
+                          className={cn(
+                            "p-2 rounded-xl transition-all flex items-center gap-2 text-xs font-bold bubble-shadow",
+                            copiedId === msg.id 
+                              ? "bg-[#99ff88] text-[#4338ca]" 
+                              : "bg-white text-[#f97316] hover:bg-[#fff7ed] border-2 border-[#fef3c7]"
+                          )}
+                          title="Copy full verification report"
+                        >
+                          {copiedId === msg.id ? <Check size={14} /> : <Copy size={14} />}
+                        </button>
+                      </div>
                     )}
                     {msg.attachments && msg.attachments.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-3">
@@ -604,42 +822,27 @@ export default function App() {
                               </div>
                             )}
                             {att.type === 'document' && (
-                              <div className="flex flex-col gap-2">
-                                <div className="h-16 w-64 bg-slate-50 flex items-center px-4 gap-3 border border-slate-200 rounded-xl">
-                                  <div className="p-2 bg-amber-100 rounded-lg">
-                                    <FileText className="text-amber-600" size={20} />
-                                  </div>
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="text-xs font-bold text-slate-700 truncate">{att.name}</span>
-                                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Document</span>
-                                  </div>
-                                </div>
-                                {att.mimeType === 'application/pdf' && (
-                                  <div className="w-64 h-80 rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
-                                    <iframe 
-                                      src={att.url} 
-                                      className="w-full h-full border-none"
-                                      title={att.name}
-                                    />
-                                  </div>
-                                )}
-                                {att.textContent && (
-                                  <div className="w-64 max-h-64 overflow-y-auto p-4 bg-slate-50 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-600 leading-relaxed custom-scrollbar shadow-inner">
-                                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-200/50">
-                                      <div className="w-2 h-2 rounded-full bg-slate-300" />
-                                      <span className="text-[9px] uppercase tracking-widest font-bold text-slate-400">Content Preview</span>
-                                    </div>
-                                    {att.textContent}
-                                  </div>
-                                )}
-                              </div>
+                              <DocumentPreview 
+                                attachment={att} 
+                                onExpand={() => setPreviewAttachment(att)}
+                              />
                             )}
                           </div>
                         ))}
                       </div>
                     )}
-                    <div className="prose prose-sm max-w-none whitespace-pre-wrap leading-relaxed">
-                      {msg.content}
+                    <div className="flex items-center gap-2 mb-2">
+                      {msg.role === 'assistant' && (
+                        <div className={cn(
+                          "p-1.5 rounded-lg",
+                          msg.aiDetection?.isAI ? "bg-[#e4c1f9] text-[#4338ca]" : "bg-[#70d6ff] text-[#4338ca]"
+                        )}>
+                          {msg.aiDetection?.isAI ? <Bot size={16} /> : <User size={16} />}
+                        </div>
+                      )}
+                      <div className="prose prose-sm max-w-none whitespace-pre-wrap leading-relaxed">
+                        {msg.content}
+                      </div>
                     </div>
 
                     {/* Credibility and AI Detection Indicators */}
@@ -667,7 +870,7 @@ export default function App() {
                                 msg.aiDetection.isAI ? "bg-[#e4c1f9] text-[#4338ca]" : "bg-[#70d6ff] text-[#4338ca]"
                               )}>
                                 {msg.aiDetection.isAI ? "Robot Made" : "Human Made"}
-                                <span className="opacity-60 font-medium">({Math.round(msg.aiDetection.confidence * 100)}%)</span>
+                                <span className="opacity-60 font-medium">({Math.round(msg.aiDetection.confidence)}%)</span>
                               </div>
                             </div>
                           )}
@@ -683,20 +886,29 @@ export default function App() {
 
                   {/* Grounding Sources */}
                   {msg.groundingSources && msg.groundingSources.length > 0 && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-3 space-y-3">
                       <p className="text-[10px] font-bold text-[#f97316] uppercase tracking-widest ml-1">Where I checked 📚</p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid grid-cols-1 gap-3">
                         {msg.groundingSources.map((source, i) => (
-                          <a 
+                          <div 
                             key={i} 
-                            href={source.uri} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border-2 border-[#fef3c7] text-[11px] font-bold text-[#4338ca] hover:bg-[#fff7ed] transition-all bubble-shadow"
+                            className="flex flex-col gap-2 p-3 rounded-2xl bg-white border-2 border-[#fef3c7] bubble-shadow group/source transition-all hover:bg-[#fff7ed]"
                           >
-                            <ExternalLink size={12} className="text-[#70d6ff]" />
-                            <span className="truncate max-w-[150px]">{source.title}</span>
-                          </a>
+                            <a 
+                              href={source.uri} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-[11px] font-bold text-[#4338ca] hover:underline decoration-[#70d6ff] decoration-2"
+                            >
+                              <ExternalLink size={12} className="text-[#70d6ff]" />
+                              <span className="truncate">{source.title}</span>
+                            </a>
+                            {source.snippet && (
+                              <p className="text-[10px] text-slate-500 leading-relaxed pl-5 border-l-2 border-[#70d6ff]/30 italic">
+                                "{source.snippet}"
+                              </p>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -859,6 +1071,50 @@ export default function App() {
       <AnimatePresence>
         {isEducationalOpen && (
           <EducationalSection onClose={() => setIsEducationalOpen(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Attachment Preview Modal */}
+      <AnimatePresence>
+        {previewAttachment && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPreviewAttachment(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-5xl max-h-[90vh] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col border-4 border-[#f97316]"
+            >
+              <div className="p-4 bg-[#fff7ed] border-b-4 border-[#fef3c7] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#f97316] rounded-xl text-white">
+                    <FileText size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-[#4338ca]">{previewAttachment.name}</h3>
+                    <p className="text-xs font-bold text-[#f97316] uppercase tracking-wider">Document Preview</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPreviewAttachment(null)}
+                  className="p-2 hover:bg-[#ffedd5] rounded-xl text-[#f97316] transition-all"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-hidden p-6 bg-[#fff7ed]/30">
+                <div className="w-full h-full flex items-center justify-center">
+                  <DocumentPreview attachment={previewAttachment} />
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

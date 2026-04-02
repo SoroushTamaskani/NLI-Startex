@@ -12,6 +12,9 @@ export interface Message {
     confidence: number;
     reasoning: string;
   };
+  modelName?: string;
+  processingTime?: number; // in ms
+  userFeedback?: 'correct' | 'incorrect';
 }
 
 export interface Attachment {
@@ -28,6 +31,7 @@ export interface Attachment {
 export interface GroundingSource {
   title: string;
   uri: string;
+  snippet?: string;
 }
 
 export interface ChatSession {

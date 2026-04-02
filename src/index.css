@@ -40,6 +40,16 @@ h1, h2, h3, h4 {
   box-shadow: 0 8px 0px rgba(0, 0, 0, 0.05);
 }
 
+.bg-pattern-ai {
+  background-image: radial-gradient(var(--color-kids-purple) 0.5px, transparent 0.5px);
+  background-size: 10px 10px;
+}
+
+.bg-pattern-human {
+  background-image: radial-gradient(var(--color-kids-blue) 0.5px, transparent 0.5px);
+  background-size: 15px 15px;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 10px;
 }
