@@ -83,9 +83,9 @@ export function Composer(props: ComposerProps) {
   const hint = props.disabledReason
     ? props.disabledReason
     : props.uploadErrors
-      ? 'Remove or retry the file that failed before checking.'
+      ? 'One file didn\'t upload. Tap ↻ to try again or ✕ to remove it.'
       : props.uploadsBusy
-        ? 'Waiting for files to finish uploading…'
+        ? 'Getting your files ready…'
         : undefined;
 
   // Grow the box with its content, up to a limit.
@@ -156,7 +156,7 @@ export function Composer(props: ComposerProps) {
             onPaste={onPaste}
             rows={1}
             maxLength={20000}
-            placeholder={speech.listening ? 'Listening… 👂' : 'Paste a claim, a link, or a question to check 🕵️'}
+            placeholder={speech.listening ? 'Listening… 👂' : 'What do you want to check? Type it, paste a link, or add a picture 🕵️'}
             className="custom-scrollbar block max-h-[200px] min-h-[52px] w-full resize-none bg-transparent px-5 pb-1 pt-3.5 text-base font-semibold text-ink placeholder:font-medium placeholder:text-ink-faint focus:outline-none focus-visible:outline-none"
           />
           <div className="flex items-center gap-1 px-2 pb-2 sm:gap-1.5">
@@ -193,8 +193,8 @@ export function Composer(props: ComposerProps) {
               </button>
             )}
             <div className="ml-1 flex rounded-full bg-cream-300/60 p-0.5" role="group" aria-label="How thorough should the check be?">
-              {modeButton('deep', '🔬 Deep', 'Deep check: slower, more careful research')}
-              {modeButton('quick', '⚡ Quick', 'Quick check: faster, lighter research')}
+              {modeButton('deep', '🔬 Careful', 'Careful check: takes longer, looks at more websites')}
+              {modeButton('quick', '⚡ Fast', 'Fast check: quicker, looks at fewer websites')}
             </div>
             <div className="flex-1" />
             {checking ? (
@@ -213,7 +213,7 @@ export function Composer(props: ComposerProps) {
                 disabled={!canSend}
                 className="flex items-center gap-2 whitespace-nowrap rounded-2xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white shadow-bubble transition-colors hover:bg-brand-600 disabled:bg-cream-300 disabled:text-ink-faint disabled:shadow-none"
               >
-                <Send size={16} aria-hidden /> <span className="hidden min-[400px]:inline">Check it</span>
+                <Send size={16} aria-hidden /> <span className="hidden min-[400px]:inline">Check it!</span>
                 <span className="sr-only min-[400px]:hidden">Check it</span>
               </button>
             )}
@@ -225,7 +225,7 @@ export function Composer(props: ComposerProps) {
               <AlertCircle size={12} aria-hidden /> {hint}
             </>
           ) : (
-            'NLI can make mistakes. Always look at the sources, and ask a grown-up if something worries you.'
+            'Robots can make mistakes too! Look at the websites I used, and ask a grown-up if something worries you.'
           )}
         </p>
       </div>

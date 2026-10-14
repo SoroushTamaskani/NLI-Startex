@@ -3,7 +3,8 @@ import { useMemo, useState } from 'react';
 import { useEscape } from '../hooks/useMisc';
 import { dateGroup, lastVerdictEmoji } from '../lib/format';
 import { cn } from '../lib/utils';
-import type { Session } from '../types';
+import type { Audience, Session } from '../types';
+import { AgePicker } from './AgePicker';
 
 export function Sidebar({
   sessions,
@@ -16,6 +17,9 @@ export function Sidebar({
   onDelete,
   onClearAll,
   onOpenAcademy,
+  onOpenGuide,
+  audience,
+  onAudienceChange,
 }: {
   sessions: Session[];
   activeId: string | null;
@@ -27,6 +31,9 @@ export function Sidebar({
   onDelete: (id: string) => void;
   onClearAll: () => void;
   onOpenAcademy: () => void;
+  onOpenGuide: () => void;
+  audience: Audience;
+  onAudienceChange: (audience: Audience) => void;
 }) {
   const [query, setQuery] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -97,7 +104,7 @@ export function Sidebar({
 
         <nav className="custom-scrollbar flex-1 overflow-y-auto px-2 pb-4">
           {sessions.length === 0 && (
-            <p className="px-4 py-6 text-center text-sm text-ink-faint">Your checks will appear here. 🔍</p>
+            <p className="px-4 py-6 text-center text-sm text-ink-faint">Things you check will show up here. 🔍</p>
           )}
           {sessions.length > 0 && groups.length === 0 && <p className="px-4 py-6 text-center text-sm text-ink-faint">No checks match “{query}”.</p>}
           {groups.map(([label, items]) => (
@@ -161,6 +168,10 @@ export function Sidebar({
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-kids-yellow px-4 py-2.5 font-display font-semibold text-ink shadow-bubble hover:brightness-95"
           >
             <GraduationCap size={20} aria-hidden /> Truth Academy 🎓
+          </button>
+          <AgePicker value={audience} onChange={onAudienceChange} compact />
+          <button type="button" onClick={onOpenGuide} className="w-full rounded-xl py-1.5 text-xs font-bold text-ink-soft hover:bg-cream-100 hover:text-ink">
+            For parents and teachers
           </button>
           {!persistent && (
             <p className="text-center text-[11px] text-verdict-misleading-ink">This browser can't save history, so checks disappear when you close the page.</p>

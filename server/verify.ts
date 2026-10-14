@@ -6,11 +6,11 @@ import {
   type GoogleGenAI,
   type Part,
 } from '@google/genai';
-import type { CheckMode, HistoryTurn, VerificationResult, VerifyAttachment, VerifyRequest, VerifyStage } from '../shared/types';
+import type { Audience, CheckMode, HistoryTurn, VerificationResult, VerifyAttachment, VerifyRequest, VerifyStage } from '../shared/types';
 import { config } from './config';
 import { AppError } from './errors';
 import { addSharedLinkSources, buildGroundedReport, resolveSourceUrls, sharedLinksFrom } from './grounding';
-import { EXTRACTION_INSTRUCTION, researchInstruction } from './prompts';
+import { extractionInstruction, researchInstruction } from './prompts';
 import { applyEvidenceGuards, EXTRACTION_SCHEMA, normalizeExtracted, type Extracted } from './result';
 
 const MAX_TEXT = 20_000;
@@ -50,6 +50,7 @@ export function parseVerifyRequest(body: unknown): VerifyRequest {
   const data = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>;
   const text = typeof data.text === 'string' ? data.text.slice(0, MAX_TEXT) : '';
   const mode: CheckMode = data.mode === 'quick' ? 'quick' : 'deep';
+  const audience: Audience = data.audience === 'young' || data.audience === 'teen' ? data.audience : 'kid';
 
   const attachments: VerifyAttachment[] = [];
   for (const item of Array.isArray(data.attachments) ? data.attachments.slice(0, MAX_ATTACHMENTS) : []) {
@@ -74,7 +75,7 @@ export function parseVerifyRequest(body: unknown): VerifyRequest {
   if (!text.trim() && attachments.length === 0) {
     throw new AppError('BAD_REQUEST', 'Send a message or attach something to check.');
   }
-  return { text, attachments, history, mode };
+  return { text, attachments, history, mode, audience };
 }
 
 function buildContents(request: VerifyRequest): Content[] {
@@ -121,7 +122,7 @@ async function research(ai: GoogleGenAI, model: string, request: VerifyRequest, 
     model,
     contents: buildContents(request),
     config: {
-      systemInstruction: researchInstruction(new Date().toISOString().slice(0, 10)),
+      systemInstruction: researchInstruction(new Date().toISOString().slice(0, 10), request.audience),
       thinkingConfig: { thinkingLevel: request.mode === 'deep' ? ThinkingLevel.HIGH : ThinkingLevel.LOW },
       abortSignal: signal,
     },
@@ -138,7 +139,7 @@ async function research(ai: GoogleGenAI, model: string, request: VerifyRequest, 
   }
 }
 
-async function extract(ai: GoogleGenAI, report: string, signal: AbortSignal): Promise<Extracted> {
+async function extract(ai: GoogleGenAI, report: string, audience: Audience, signal: AbortSignal): Promise<Extracted> {
   const models = [...new Set([config.models.quick, config.models.deep])].filter(m => !unavailableModels.has(m));
   for (const model of models) {
     try {
@@ -146,7 +147,7 @@ async function extract(ai: GoogleGenAI, report: string, signal: AbortSignal): Pr
         model,
         contents: [{ role: 'user', parts: [{ text: `REPORT:\n\n${report}` }] }],
         config: {
-          systemInstruction: EXTRACTION_INSTRUCTION,
+          systemInstruction: extractionInstruction(audience),
           responseMimeType: 'application/json',
           responseSchema: EXTRACTION_SCHEMA,
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
@@ -187,14 +188,15 @@ export async function verify(
   options.onStage('structuring');
   const sharedLinks = sharedLinksFrom(candidate?.urlContextMetadata);
   const [extracted, resolvedSources] = await Promise.all([
-    extract(ai, rawReport, options.signal),
+    extract(ai, rawReport, request.audience, options.signal),
     resolveSourceUrls(grounded.sources),
   ]);
   const sources = addSharedLinkSources(resolvedSources, sharedLinks);
   const guarded = applyEvidenceGuards(extracted, sources, grounded.coverage);
   const failedLinks = sharedLinks.filter(l => l.status !== 'read');
   if (failedLinks.length > 0) {
-    guarded.notices.push(`NLI couldn't open ${failedLinks.length === 1 ? 'a link you shared' : `${failedLinks.length} links you shared`}, so ${failedLinks.length === 1 ? 'it was' : 'they were'} not read directly.`);
+    const which = failedLinks.length === 1 ? 'the link you shared' : `${failedLinks.length} of the links you shared`;
+    guarded.notices.push(`I couldn't open ${which}, so I didn't read ${failedLinks.length === 1 ? 'it' : 'them'} myself.`);
   }
 
   const { hasFactualClaims: _unused, ...fields } = guarded.extracted;

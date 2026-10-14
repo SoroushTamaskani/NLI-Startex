@@ -1,5 +1,5 @@
 import type { AttachmentKind } from '../shared/files';
-import type { ApiError, CheckMode, UploadRef, VerificationResult, VerifyStage } from '../shared/types';
+import type { ApiError, Audience, CheckMode, UploadRef, VerificationResult, VerifyStage } from '../shared/types';
 
 export type { AttachmentKind } from '../shared/files';
 export type * from '../shared/types';
@@ -35,6 +35,8 @@ export interface UserMessage {
   text: string;
   attachments: AttachmentMeta[];
   mode: CheckMode;
+  /** Who the answer was written for. Missing on messages saved before ages were added. */
+  audience?: Audience;
   createdAt: string;
 }
 

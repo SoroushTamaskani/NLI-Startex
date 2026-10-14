@@ -95,7 +95,7 @@ export function SourceList({
               </a>
               {source.supports.length > 0 && (
                 <div className="mt-2 space-y-1 border-l-4 border-kids-blue/40 pl-3 ml-9">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">Backs up</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">This website says</p>
                   {source.supports.map(text => (
                     <p key={text} className="text-xs leading-relaxed text-ink-soft">
                       “{text}”

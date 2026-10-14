@@ -69,8 +69,9 @@ export function reportAsText(result: VerificationResult, question?: UserMessage)
   const style = VERDICT_STYLES[result.verdict];
   const lines = [`NLI fact-check: ${style.label} ${style.emoji}`, result.headline, '', result.simpleSummary];
   if (question?.text) lines.unshift(`Checked: "${question.text.trim()}"`, '');
-  lines.push('', `Trust meter: ${result.credibilityScore}/100`);
+  lines.push('', `Truth-o-meter: ${result.credibilityScore} out of 100`);
   if (result.aiCheck.applicable) lines.push(`AI check: ${result.aiCheck.assessment.replace('_', ' ').toLowerCase()} (${result.aiCheck.confidence}% sure)`);
+  if (result.lesson) lines.push(`Detective tip: ${result.lesson}`);
   if (result.claims.length) {
     lines.push('', 'Claims:');
     result.claims.forEach(c => lines.push(`- ${c.claim}: ${VERDICT_STYLES[c.verdict].label}. ${c.explanation}`));

@@ -24,7 +24,7 @@ export function UserBubble({ message, onPreview }: { message: UserMessage; onPre
           {message.text && <p className="whitespace-pre-wrap break-words leading-relaxed">{message.text}</p>}
         </div>
         <p className="px-2 text-right text-[11px] text-ink-faint">
-          {message.mode === 'quick' ? '⚡ Quick check' : '🔬 Deep check'} · {formatTime(message.createdAt)}
+          {message.mode === 'quick' ? '⚡ Fast check' : '🔬 Careful check'} · {formatTime(message.createdAt)}
         </p>
       </div>
     </div>
@@ -96,13 +96,15 @@ export function AssistantView({
 }
 
 const WAITING_TIPS = [
-  'Tip: check who made a post before you share it.',
-  'Tip: if something makes you feel very angry or scared, slow down and check it.',
-  'Tip: look for the same story on two or three trusted websites.',
-  'Tip: AI pictures often get hands, text and reflections wrong.',
-  'Tip: old photos are often shared again as if they were new.',
-  'Tip: a real expert usually explains how they know something.',
-];
+  '💡 Before you share something, ask: who made this, and how do they know?',
+  '💡 If a post makes you feel super angry or scared, slow down. Tricksters want you to share fast.',
+  '💡 Try to find the same story on two or three trusted websites.',
+  '💡 Computer-made pictures often get hands, writing and reflections wrong.',
+  '💡 Old photos are often shared again as if they happened today.',
+  '💡 "Share this before it gets deleted!" is a big warning sign.',
+  '💡 Ads can look like normal videos. Look for words like "ad" or "sponsored".',
+  '💡 Opinions, like "pizza is the best", can\'t be true or false. Facts can be checked.',
+]
 
 export function PendingCard({ pending, onStop }: { pending: PendingCheck; onStop: () => void }) {
   const elapsed = useElapsed(pending.startedAt);
@@ -113,9 +115,9 @@ export function PendingCard({ pending, onStop }: { pending: PendingCheck; onStop
   }, []);
 
   const steps = [
-    { key: 'starting', label: 'Reading your message' },
-    { key: 'researching', label: pending.mode === 'deep' ? 'Searching the web and studying the evidence' : 'Searching the web' },
-    { key: 'structuring', label: 'Writing up the verdict' },
+    { key: 'starting', label: 'Reading what you sent 📖' },
+    { key: 'researching', label: 'Hunting for clues on trusted websites 🔎' },
+    { key: 'structuring', label: 'Writing your answer ✏️' },
   ];
   const current = steps.findIndex(s => s.key === pending.stage);
 
@@ -132,9 +134,9 @@ export function PendingCard({ pending, onStop }: { pending: PendingCheck; onStop
             <Bot size={22} />
           </motion.span>
           <div className="flex-1">
-            <p className="font-display text-lg font-semibold text-ink">Investigating… 🕵️</p>
+            <p className="font-display text-lg font-semibold text-ink">On the case… 🕵️</p>
             <p className="flex items-center gap-1 text-xs text-ink-faint">
-              <Clock3 size={12} aria-hidden /> {elapsed}s · {pending.mode === 'deep' ? 'deep checks usually take under a minute' : 'quick check'}
+              <Clock3 size={12} aria-hidden /> {elapsed}s · {pending.mode === 'deep' ? 'careful checks can take up to a minute' : 'fast check'}
             </p>
           </div>
           <button

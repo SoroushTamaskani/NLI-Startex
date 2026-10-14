@@ -9,6 +9,9 @@ export type AiAssessment = 'LIKELY_AI' | 'LIKELY_HUMAN' | 'UNCERTAIN';
 
 export type CheckMode = 'deep' | 'quick';
 
+/** Who the answer is written for: 6–8, 9–12, or 13 and up. */
+export type Audience = 'young' | 'kid' | 'teen';
+
 /** What the server hands back after a file has been uploaded. */
 export type UploadRef =
   | {
@@ -43,6 +46,7 @@ export interface VerifyRequest {
   attachments: VerifyAttachment[];
   history: HistoryTurn[];
   mode: CheckMode;
+  audience: Audience;
 }
 
 /**
@@ -83,6 +87,11 @@ export interface AiCheck {
   signals: string[];
 }
 
+export interface GlossaryWord {
+  word: string;
+  meaning: string;
+}
+
 export interface VerificationResult {
   verdict: Verdict;
   headline: string;
@@ -93,6 +102,14 @@ export interface VerificationResult {
   claims: ClaimCheck[];
   aiCheck: AiCheck;
   tips: string[];
+  /** One reusable fact-checking habit this check teaches. */
+  lesson: string;
+  /** Tricky words from the answer, explained simply. */
+  glossary: GlossaryWord[];
+  /** True when the topic could worry or upset a child. */
+  sensitive: boolean;
+  /** Calm words for a worried reader; empty unless `sensitive`. */
+  reassurance: string;
   /** Full markdown report with citation markers like [1](#cite-1). */
   report: string;
   sources: Source[];

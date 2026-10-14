@@ -3,7 +3,7 @@
  * evidence rules the model is not trusted to enforce on its own.
  */
 import { Type } from '@google/genai';
-import type { AiAssessment, AiCheck, ClaimCheck, Source, Verdict } from '../shared/types';
+import type { AiAssessment, AiCheck, ClaimCheck, GlossaryWord, Source, Verdict } from '../shared/types';
 
 export interface Extracted {
   verdict: Verdict;
@@ -14,6 +14,10 @@ export interface Extracted {
   claims: ClaimCheck[];
   aiCheck: AiCheck;
   tips: string[];
+  lesson: string;
+  glossary: GlossaryWord[];
+  sensitive: boolean;
+  reassurance: string;
 }
 
 const VERDICTS: Verdict[] = ['TRUE', 'FALSE', 'MISLEADING', 'MIXED', 'UNVERIFIABLE'];
@@ -50,8 +54,32 @@ export const EXTRACTION_SCHEMA = {
       required: ['applicable', 'assessment', 'confidence', 'signals'],
     },
     tips: { type: Type.ARRAY, items: { type: Type.STRING } },
+    lesson: { type: Type.STRING },
+    glossary: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: { word: { type: Type.STRING }, meaning: { type: Type.STRING } },
+        required: ['word', 'meaning'],
+      },
+    },
+    sensitive: { type: Type.BOOLEAN },
+    reassurance: { type: Type.STRING },
   },
-  required: ['verdict', 'headline', 'simpleSummary', 'credibilityScore', 'hasFactualClaims', 'claims', 'aiCheck', 'tips'],
+  required: [
+    'verdict',
+    'headline',
+    'simpleSummary',
+    'credibilityScore',
+    'hasFactualClaims',
+    'claims',
+    'aiCheck',
+    'tips',
+    'lesson',
+    'glossary',
+    'sensitive',
+    'reassurance',
+  ],
 };
 
 /** Score ranges each verdict may use, so the meter can never contradict the verdict. */
@@ -129,6 +157,17 @@ export function normalizeExtracted(raw: unknown, report: string): Extracted {
         .slice(0, 6)
     : [];
 
+  const glossary = Array.isArray(data.glossary)
+    ? data.glossary
+        .map(g => {
+          const entry = (g ?? {}) as Record<string, unknown>;
+          return { word: asString(entry.word, 40), meaning: asString(entry.meaning, 160) };
+        })
+        .filter(g => g.word && g.meaning)
+        .slice(0, 4)
+    : [];
+  const sensitive = data.sensitive === true;
+
   return {
     verdict,
     headline: asString(data.headline, 160) || defaultHeadline(verdict),
@@ -143,8 +182,23 @@ export function normalizeExtracted(raw: unknown, report: string): Extracted {
       signals: asStrings(ai.signals, 6, 160),
     },
     tips: asStrings(data.tips, 3, 240),
+    lesson: asString(data.lesson, 240) || DEFAULT_LESSON[verdict],
+    glossary,
+    sensitive,
+    reassurance: sensitive
+      ? asString(data.reassurance, 400) || 'It is okay to feel worried. Talking about it with a grown-up you trust can really help.'
+      : '',
   };
 }
+
+/** Used when the model leaves the lesson out: a general habit that fits the verdict. */
+const DEFAULT_LESSON: Record<Verdict, string> = {
+  TRUE: 'Even true things are worth checking. Finding the same fact on two trusted websites makes you sure.',
+  FALSE: 'Lots of people repeating something does not make it true. Look for proof from experts.',
+  MISLEADING: 'Some tricks use a little bit of truth. Ask what is missing or what has been left out.',
+  MIXED: 'Check each part on its own. One true part does not make the whole thing true.',
+  UNVERIFIABLE: "If you can't find proof, it's okay to say \"I'm not sure yet\" and wait before sharing.",
+};
 
 function defaultHeadline(verdict: Verdict): string {
   switch (verdict) {
@@ -183,10 +237,10 @@ export function applyEvidenceGuards(extracted: Extracted, sources: Source[], cov
       credibilityScore: 50,
     };
     notices.push(
-      `No web sources came back for this check, so NLI changed the verdict from "${label(extracted.verdict)}" to "Can't confirm". The report below is the AI's reasoning without evidence; treat it with care.`,
+      `I couldn't find any websites about this, so I can't be sure. I changed my answer from "${label(extracted.verdict)}" to "Can't confirm". The full report is only my own thinking, with no proof.`,
     );
   } else if (searchSources > 0 && coverage < 0.15) {
-    notices.push('Only a small part of this report is directly linked to a source. Check the sources below before relying on it.');
+    notices.push('Only a small part of this answer is linked to a website. Look at the websites below before you believe it.');
   }
 
   if (result.aiCheck.applicable && result.aiCheck.confidence > 85) {

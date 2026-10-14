@@ -10,7 +10,30 @@ NLI is a friendly fact-checker for kids and families. Send it a claim, a link, a
 2. **Checks whether it was made by AI**: looks for concrete clues (garbled text, extra fingers, mismatched reflections…) and gives a hedged "robot check".
 3. **Shows its work**: every source is a page Google Search actually returned, numbered citations link each sentence to the sources behind it, and a full report explains every step.
 
-It also includes **Truth Academy**, a quiz with levels, points and badges that teaches kids the clues fact-checkers use.
+### Built for kids
+
+* **Answers fit the reader's age.** A "Who's checking?" picker (6–8, 9–12, 13+) is sent with every check. Both model passes write for that age, using very short sentences for young children.
+* **Every answer teaches something.** A *Detective tip* (a fact-checking habit to reuse), *Words to know* (tricky words explained), and *Check it yourself* tips.
+* **Gentle with scary topics.** The prompts avoid graphic detail. When a topic could worry a child, a calm *Feeling worried?* note suggests talking with a trusted grown-up. If a message suggests the child is in danger, or someone is asking them for money, photos or personal details, NLI tells them to stop and talk to a grown-up.
+* **Easy to read.** A face-based *Truth-o-meter*, a 🔊 *Read it to me* button (browser speech), and the full report tucked under *For grown-ups*.
+* **A guide for parents and teachers** explains how checks work, what NLI can get wrong, and what happens to their data.
+
+### Truth Academy
+
+A learning game that teaches the clues fact-checkers use:
+
+* **7 short lessons** with read-aloud slides and a quick check at the end. Topics: the 4 detective moves, AI pictures, deepfakes, tricky headlines, ads in disguise, fact vs opinion, and staying safe online.
+* **30 challenges in 3 formats:** multiple choice, *find all the clues*, and *sorting* (for example fact or opinion). A round draws 6 random questions, and answers are shuffled.
+* **Progress:**
+  * Points, with streak bonuses and half points after a hint.
+  * 1–3 stars per round.
+  * Ranks that unlock in order (Easy → Medium → Hard).
+  * Six detective ranks, from Rookie to Truth Legend.
+  * 14 badges.
+  * A daily challenge with a day streak.
+  * A *Detective notebook* that reviews what you got wrong.
+
+Progress is saved in the browser (`localStorage`). Points and badges from the first version carry over.
 
 View the app in AI Studio: https://ai.studio/apps/8696c392-78b1-4801-b69d-925bf62ba810
 

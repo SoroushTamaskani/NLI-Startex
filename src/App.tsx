@@ -10,6 +10,7 @@ import type { PreviewItem } from './components/AttachmentView';
 import { Header, HealthBanner, Toasts } from './components/Chrome';
 import { Composer } from './components/Composer';
 import { EmptyState } from './components/EmptyState';
+import { GrownUpsGuide } from './components/GrownUpsGuide';
 import { AssistantView, PendingCard, UserBubble } from './components/Messages';
 import { PreviewModal } from './components/PreviewModal';
 import { Sidebar } from './components/Sidebar';
@@ -21,19 +22,37 @@ import { useSpeechInput } from './hooks/useSpeechInput';
 import { saveFile } from './lib/db';
 import { sessionTitle } from './lib/format';
 import { newId } from './lib/ids';
-import type { AssistantMessage, CheckMode, Message, UserMessage } from './types';
+import type { AssistantMessage, Audience, CheckMode, Message, UserMessage } from './types';
 
 // Truth Academy is a separate screen; load it only when someone opens it.
 const EducationalSection = lazy(() => import('./components/EducationalSection'));
 
 const MODE_KEY = 'nli_mode';
+const AUDIENCE_KEY = 'nli_audience';
+
+function readSetting(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeSetting(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Not important enough to bother anyone about.
+  }
+}
 
 function loadMode(): CheckMode {
-  try {
-    return localStorage.getItem(MODE_KEY) === 'quick' ? 'quick' : 'deep';
-  } catch {
-    return 'deep';
-  }
+  return readSetting(MODE_KEY) === 'quick' ? 'quick' : 'deep';
+}
+
+function loadAudience(): Audience {
+  const saved = readSetting(AUDIENCE_KEY);
+  return saved === 'young' || saved === 'teen' ? saved : 'kid';
 }
 
 export default function App() {
@@ -46,6 +65,8 @@ export default function App() {
 
   const [input, setInput] = useState('');
   const [mode, setMode] = useState<CheckMode>(loadMode);
+  const [audience, setAudience] = useState<Audience>(loadAudience);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [academyOpen, setAcademyOpen] = useState(false);
   const [preview, setPreview] = useState<PreviewItem | null>(null);
@@ -60,13 +81,8 @@ export default function App() {
   const messages = active?.messages ?? [];
   const pendingHere = check.pending && check.pending.sessionId === active?.id ? check.pending : null;
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(MODE_KEY, mode);
-    } catch {
-      // Not important enough to bother anyone about.
-    }
-  }, [mode]);
+  useEffect(() => writeSetting(MODE_KEY, mode), [mode]);
+  useEffect(() => writeSetting(AUDIENCE_KEY, audience), [audience]);
 
   // Scroll to a new answer's start (it can be long); otherwise stick to the bottom.
   const lastMessage = messages[messages.length - 1];
@@ -116,6 +132,7 @@ export default function App() {
       role: 'user',
       text,
       mode,
+      audience,
       createdAt: new Date().toISOString(),
       attachments: ready.map(d => ({ id: d.id, kind: d.kind, name: d.name, mimeType: d.mimeType, size: d.size, ref: d.ref! })),
     };
@@ -175,6 +192,12 @@ export default function App() {
             setSidebarOpen(false);
             setAcademyOpen(true);
           }}
+          onOpenGuide={() => {
+            setSidebarOpen(false);
+            setGuideOpen(true);
+          }}
+          audience={audience}
+          onAudienceChange={setAudience}
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -192,6 +215,9 @@ export default function App() {
             <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6">
               {!active && (
                 <EmptyState
+                  audience={audience}
+                  onAudienceChange={setAudience}
+                  onOpenGuide={() => setGuideOpen(true)}
                   onExample={text => {
                     setInput(text);
                     inputRef.current?.focus();
@@ -250,6 +276,7 @@ export default function App() {
 
         <Toasts toasts={toasts} onDismiss={dismiss} />
 
+        <AnimatePresence>{guideOpen && <GrownUpsGuide onClose={() => setGuideOpen(false)} />}</AnimatePresence>
         <AnimatePresence>{preview && <PreviewModal item={preview} onClose={() => setPreview(null)} />}</AnimatePresence>
         <Suspense fallback={null}>
           <AnimatePresence>{academyOpen && <EducationalSection onClose={() => setAcademyOpen(false)} />}</AnimatePresence>

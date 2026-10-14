@@ -30,7 +30,7 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
   },
   MISLEADING: {
     label: 'Misleading',
-    kidLabel: 'Tricky! Part true, but it fools you',
+    kidLabel: 'Tricky! A bit true, but it fools you',
     emoji: '⚠️',
     banner: 'bg-verdict-misleading-soft border-verdict-misleading/40',
     pill: 'bg-verdict-misleading-soft text-verdict-misleading-ink border-verdict-misleading/30',
@@ -46,7 +46,7 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
   },
   UNVERIFIABLE: {
     label: "Can't confirm",
-    kidLabel: 'Not enough proof either way',
+    kidLabel: "I couldn't find enough proof",
     emoji: '🤷',
     banner: 'bg-verdict-unknown-soft border-verdict-unknown/40',
     pill: 'bg-verdict-unknown-soft text-verdict-unknown-ink border-verdict-unknown/30',
@@ -55,15 +55,22 @@ export const VERDICT_STYLES: Record<Verdict, VerdictStyle> = {
 };
 
 export const AI_LABELS: Record<AiAssessment, { label: string; emoji: string }> = {
-  LIKELY_AI: { label: 'Probably computer-made', emoji: '🤖' },
-  LIKELY_HUMAN: { label: 'Probably made by a person', emoji: '🙋' },
-  UNCERTAIN: { label: "Hard to tell", emoji: '🤔' },
+  LIKELY_AI: { label: 'Probably made by a computer', emoji: '🤖' },
+  LIKELY_HUMAN: { label: 'Probably made by a real person', emoji: '🙋' },
+  UNCERTAIN: { label: 'Hard to tell', emoji: '🤔' },
 };
 
+const TRUST_LABELS = ['Very likely false', 'Mostly false', 'Not sure', 'Mostly true', 'Very likely true'];
+
+/** 0 (very likely false) to 4 (very likely true). The meter's face and label both use this. */
+export function trustLevel(score: number): number {
+  if (score >= 80) return 4;
+  if (score >= 60) return 3;
+  if (score > 40) return 2;
+  if (score > 20) return 1;
+  return 0;
+}
+
 export function trustLabel(score: number): string {
-  if (score >= 80) return 'Very likely true';
-  if (score >= 60) return 'Mostly true';
-  if (score > 40) return 'Unclear';
-  if (score > 20) return 'Mostly false';
-  return 'Very likely false';
+  return TRUST_LABELS[trustLevel(score)];
 }

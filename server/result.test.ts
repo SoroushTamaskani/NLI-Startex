@@ -27,6 +27,28 @@ describe('normalizeExtracted', () => {
   });
 });
 
+describe('kid-focused fields', () => {
+  it('fills a lesson that fits the verdict when the model leaves it out', () => {
+    expect(normalizeExtracted({ verdict: 'FALSE' }, '').lesson).toMatch(/proof/);
+  });
+
+  it('keeps only complete glossary entries, at most four', () => {
+    const glossary = [
+      { word: 'echolocation', meaning: 'finding things by listening to echoes' },
+      { word: 'myth' },
+      ...Array.from({ length: 5 }, (_, i) => ({ word: `w${i}`, meaning: 'm' })),
+    ];
+    const result = normalizeExtracted({ verdict: 'TRUE', glossary }, '');
+    expect(result.glossary).toHaveLength(4);
+    expect(result.glossary[0].word).toBe('echolocation');
+  });
+
+  it('only shows reassurance for sensitive topics, with a gentle default', () => {
+    expect(normalizeExtracted({ verdict: 'TRUE', sensitive: false, reassurance: 'x' }, '').reassurance).toBe('');
+    expect(normalizeExtracted({ verdict: 'TRUE', sensitive: true }, '').reassurance).toMatch(/grown-up/);
+  });
+});
+
 describe('verdictFromReport', () => {
   it('reads the verdict line', () => {
     expect(verdictFromReport('## Verdict\nFALSE: cows give white milk.')).toBe('FALSE');
@@ -41,7 +63,7 @@ describe('applyEvidenceGuards', () => {
     const { extracted: guarded, notices } = applyEvidenceGuards(extracted, [], 0);
     expect(guarded.verdict).toBe('UNVERIFIABLE');
     expect(guarded.credibilityScore).toBe(50);
-    expect(notices[0]).toMatch(/No web sources/);
+    expect(notices[0]).toMatch(/couldn't find any websites/);
   });
 
   it('keeps sourced verdicts', () => {
@@ -83,5 +105,11 @@ describe('parseVerifyRequest', () => {
     });
     expect(request.history).toEqual([{ role: 'user', text: 'q1' }, { role: 'model', text: 'a1' }]);
     expect(request.mode).toBe('deep');
+    expect(request.audience).toBe('kid');
+  });
+
+  it('accepts a valid audience and ignores unknown ones', () => {
+    expect(parseVerifyRequest({ text: 'hi', audience: 'young' }).audience).toBe('young');
+    expect(parseVerifyRequest({ text: 'hi', audience: 'toddler' }).audience).toBe('kid');
   });
 });

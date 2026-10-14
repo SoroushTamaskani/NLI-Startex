@@ -43,6 +43,10 @@ function fakeAi(options: { grounding?: boolean; extractionFails?: boolean } = {}
           claims: [{ claim: 'Goldfish have a 3-second memory', verdict: 'FALSE', explanation: 'Studies show months.' }],
           aiCheck: { applicable: false, assessment: 'UNCERTAIN', confidence: 0, signals: [] },
           tips: ['Look for a science website.'],
+          lesson: 'Look for experiments, not just sayings.',
+          glossary: [{ word: 'myth', meaning: 'a story lots of people believe that is not true' }],
+          sensitive: false,
+          reassurance: '',
         }),
       };
     }
@@ -95,9 +99,16 @@ describe('POST /api/verify', () => {
     expect(result.result.report).toContain(`${SENTENCE} [1](#cite-1)`);
     expect(result.result.searchQueries).toEqual(['goldfish memory study']);
     expect(result.result.notices).toEqual([]);
+    expect(result.result.lesson).toMatch(/experiments/);
+    expect(result.result.glossary[0].word).toBe('myth');
 
     // The research call must use search + URL tools; the extraction call must not.
-    const [researchCall, extractCall] = generateContent.mock.calls.map(c => c[0] as { config: { tools?: unknown[] } });
+    const [researchCall, extractCall] = generateContent.mock.calls.map(
+      c => c[0] as { config: { tools?: unknown[]; systemInstruction?: string } },
+    );
+    // Both calls are told who the reader is (the default is ages 9 to 12).
+    expect(extractCall.config.systemInstruction).toContain('aged 9 to 12');
+    expect(researchCall.config.systemInstruction).toContain('WRITING FOR CHILDREN');
     expect(researchCall.config.tools).toEqual([{ googleSearch: {} }, { urlContext: {} }]);
     expect(extractCall.config.tools).toBeUndefined();
   });
@@ -114,7 +125,7 @@ describe('POST /api/verify', () => {
     if (result?.type !== 'result') throw new Error('no result');
     expect(result.result.verdict).toBe('UNVERIFIABLE');
     expect(result.result.sources).toEqual([]);
-    expect(result.result.notices[0]).toMatch(/No web sources/);
+    expect(result.result.notices[0]).toMatch(/couldn't find any websites/);
   });
 
   it('still answers when structured extraction fails', async () => {

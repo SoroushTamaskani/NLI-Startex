@@ -26,6 +26,7 @@ export function useCheck(sessions: Pick<SessionsApi, 'appendMessage'>) {
             attachments: question.attachments.map(a => ({ name: a.name, ref: a.ref })),
             history: buildHistory(earlier),
             mode: question.mode,
+            audience: question.audience ?? 'kid',
           },
           { signal: abort.signal, onStage: stage => setPending(p => (p ? { ...p, stage } : p)) },
         );
