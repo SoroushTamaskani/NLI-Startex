@@ -79,6 +79,7 @@ export default function EducationalSection({ onClose }: { onClose: () => void })
   const [newBadges, setNewBadges] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEscape(true, onClose);
@@ -138,7 +139,12 @@ export default function EducationalSection({ onClose }: { onClose: () => void })
   };
 
   const resetProgress = () => {
-    if (!window.confirm('Reset all your points and badges?')) return;
+    // Confirm in the page itself: browser confirm() dialogs are blocked in some embeds.
+    if (!confirmReset) {
+      setConfirmReset(true);
+      return;
+    }
+    setConfirmReset(false);
     setPoints(0);
     setAiSpots(0);
     setUnlocked([]);
@@ -157,7 +163,7 @@ export default function EducationalSection({ onClose }: { onClose: () => void })
       aria-modal="true"
       aria-label="Truth Academy"
     >
-      <header className="flex items-center justify-between gap-3 border-b-4 border-cream-200 bg-white px-3 py-3 sm:px-6">
+      <header className="flex items-center justify-between gap-3 border-b-4 border-cream-200 bg-white px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -459,8 +465,16 @@ export default function EducationalSection({ onClose }: { onClose: () => void })
                     Back to training
                   </button>
                   {(points > 0 || unlocked.length > 0) && (
-                    <button type="button" onClick={resetProgress} className="text-xs font-bold text-ink-faint hover:text-verdict-false-ink">
-                      Reset my progress
+                    <button
+                      type="button"
+                      onClick={resetProgress}
+                      onBlur={() => setConfirmReset(false)}
+                      className={cn(
+                        'rounded-xl px-3 py-1.5 text-xs font-bold',
+                        confirmReset ? 'bg-verdict-false text-white' : 'text-ink-faint hover:text-verdict-false-ink',
+                      )}
+                    >
+                      {confirmReset ? 'Tap again to reset all points and badges' : 'Reset my progress'}
                     </button>
                   )}
                 </div>

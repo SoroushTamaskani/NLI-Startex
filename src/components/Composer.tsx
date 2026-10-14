@@ -128,7 +128,7 @@ export function Composer(props: ComposerProps) {
   );
 
   return (
-    <div className="border-t-4 border-cream-200 bg-white/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:px-6">
+    <div className="border-t-4 border-cream-200 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:px-6">
       <div className="mx-auto max-w-3xl">
         {drafts.length > 0 && (
           <ul className="custom-scrollbar mb-3 flex gap-2 overflow-x-auto pb-1" aria-label="Attached files">

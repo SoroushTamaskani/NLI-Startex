@@ -5,7 +5,7 @@ import { cn } from '../lib/utils';
 
 export function Header({ onMenu, onNew, onAcademy, showNew }: { onMenu: () => void; onNew: () => void; onAcademy: () => void; showNew: boolean }) {
   return (
-    <header className="flex items-center justify-between gap-3 border-b-4 border-cream-200 bg-white px-3 py-3 sm:px-6">
+    <header className="flex items-center justify-between gap-3 border-b-4 border-cream-200 bg-white px-4 py-3 sm:px-6">
       <div className="flex items-center gap-2 sm:gap-3">
         <button type="button" onClick={onMenu} className="rounded-2xl p-2 text-brand-700 hover:bg-cream-100 lg:hidden" aria-label="Open menu">
           <Menu size={26} />

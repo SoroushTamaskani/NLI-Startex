@@ -157,7 +157,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex h-dvh overflow-hidden bg-cream">
+      <div className="flex h-full overflow-hidden bg-cream">
         <Sidebar
           sessions={sessions.sessions}
           activeId={sessions.activeId}
@@ -189,7 +189,7 @@ export default function App() {
             onDragLeave={() => setDragDepth(d => Math.max(0, d - 1))}
             onDrop={onDrop}
           >
-            <div className="mx-auto max-w-3xl space-y-6 px-3 py-6 sm:px-6">
+            <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6">
               {!active && (
                 <EmptyState
                   onExample={text => {

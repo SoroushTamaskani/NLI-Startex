@@ -30,6 +30,7 @@ export function Sidebar({
 }) {
   const [query, setQuery] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
   useEscape(open, onClose);
 
   const groups = useMemo(() => {
@@ -168,11 +169,21 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => {
-                if (window.confirm('Delete all your checks and attached files from this device?')) onClearAll();
+                // Two-step confirmation in the page: browser confirm() dialogs are blocked in some embeds.
+                if (confirmClear) {
+                  setConfirmClear(false);
+                  onClearAll();
+                } else {
+                  setConfirmClear(true);
+                }
               }}
-              className="w-full rounded-xl py-1.5 text-xs font-bold text-ink-faint hover:bg-verdict-false-soft hover:text-verdict-false-ink"
+              onBlur={() => setConfirmClear(false)}
+              className={cn(
+                'w-full rounded-xl py-1.5 text-xs font-bold',
+                confirmClear ? 'bg-verdict-false text-white' : 'text-ink-faint hover:bg-verdict-false-soft hover:text-verdict-false-ink',
+              )}
             >
-              Clear all history
+              {confirmClear ? 'Tap again to delete every check and file' : 'Clear all history'}
             </button>
           )}
         </div>
