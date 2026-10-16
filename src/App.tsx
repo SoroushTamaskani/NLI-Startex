@@ -5,12 +5,13 @@
 
 import { Paperclip } from 'lucide-react';
 import { MotionConfig } from 'motion/react';
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import type { PreviewItem } from './components/AttachmentView';
 import { Header, HealthBanner, Toasts } from './components/Chrome';
 import { Composer } from './components/Composer';
 import { EmptyState } from './components/EmptyState';
-import { ErrorBoundary, retryImport } from './components/ErrorBoundary';
+import EducationalSection from './components/EducationalSection';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { GrownUpsGuide } from './components/GrownUpsGuide';
 import { AssistantView, PendingCard, UserBubble } from './components/Messages';
 import { PreviewModal } from './components/PreviewModal';
@@ -24,9 +25,6 @@ import { saveFile } from './lib/db';
 import { sessionTitle } from './lib/format';
 import { newId } from './lib/ids';
 import type { AssistantMessage, Audience, CheckMode, Message, UserMessage } from './types';
-
-// Truth Academy is a separate screen; load it only when someone opens it.
-const EducationalSection = lazy(() => retryImport(() => import('./components/EducationalSection')));
 
 const MODE_KEY = 'nli_mode';
 const AUDIENCE_KEY = 'nli_audience';
@@ -56,7 +54,7 @@ function loadAudience(): Audience {
   return saved === 'young' || saved === 'teen' ? saved : 'kid';
 }
 
-/** Full-screen shell shown while Truth Academy loads, so the button always does something visible. */
+/** Full-screen shell for the academy's error screen, so there is always a visible way out. */
 function AcademyShell({ children, onClose }: { children: ReactNode; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-cream p-6" role="dialog" aria-modal="true" aria-label="Truth Academy">
@@ -65,19 +63,6 @@ function AcademyShell({ children, onClose }: { children: ReactNode; onClose: () 
       </button>
       <div className="max-w-md space-y-4 text-center">{children}</div>
     </div>
-  );
-}
-
-function AcademyLoading({ onClose }: { onClose: () => void }) {
-  return (
-    <AcademyShell onClose={onClose}>
-      <p className="animate-bounce text-6xl" aria-hidden>
-        🎓
-      </p>
-      <p className="font-display text-2xl font-semibold text-ink" role="status">
-        Opening Truth Academy…
-      </p>
-    </AcademyShell>
   );
 }
 
@@ -341,9 +326,7 @@ export default function App() {
         {preview && <PreviewModal item={preview} onClose={() => setPreview(null)} />}
         {academyOpen && (
           <ErrorBoundary fallback={(_, reset) => <AcademyProblem onClose={() => setAcademyOpen(false)} onRetry={reset} />}>
-            <Suspense fallback={<AcademyLoading onClose={() => setAcademyOpen(false)} />}>
-              <EducationalSection onClose={() => setAcademyOpen(false)} />
-            </Suspense>
+            <EducationalSection onClose={() => setAcademyOpen(false)} />
           </ErrorBoundary>
         )}
       </div>

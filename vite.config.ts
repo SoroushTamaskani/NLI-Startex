@@ -13,6 +13,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, '.'),
     },
   },
+  build: {
+    // Truth Academy ships in the main bundle so it opens instantly, without
+    // depending on a lazy load that embedded viewers can stall.
+    chunkSizeWarningLimit: 700,
+  },
   server: {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.
     // Do not modify: file watching is disabled to prevent flickering during agent edits.

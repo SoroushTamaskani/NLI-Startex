@@ -31,11 +31,3 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.state.error ? this.props.fallback(this.state.error, this.reset) : this.props.children;
   }
 }
-
-/**
- * `import()` for a lazily loaded screen, tried twice. A one-off network blip
- * (or a stale tab after a new version is deployed) shouldn't break the screen.
- */
-export function retryImport<T>(load: () => Promise<T>): Promise<T> {
-  return load().catch(() => new Promise<T>((resolve, reject) => setTimeout(() => load().then(resolve, reject), 800)));
-}
