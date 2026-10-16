@@ -52,6 +52,7 @@ View the app in AI Studio: https://ai.studio/apps/8696c392-78b1-4801-b69d-925bf6
 | `npm start` | Serves the built app in production mode (run `npm run build` first) |
 | `npm test` | Runs the unit and API tests (Vitest) |
 | `npm run lint` | Type-checks everything (`tsc --noEmit`) |
+| `npm run build:demo` | Builds a self-contained demo with sample answers (no key needed) into `dist-demo/` |
 
 ## How it works
 

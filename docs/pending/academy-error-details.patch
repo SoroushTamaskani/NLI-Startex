@@ -1,0 +1,35 @@
+diff --git a/src/App.tsx b/src/App.tsx
+index 008877f..215e518 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -66,7 +66,7 @@ function AcademyShell({ children, onClose }: { children: ReactNode; onClose: ()
+   );
+ }
+ 
+-function AcademyProblem({ onClose, onRetry }: { onClose: () => void; onRetry: () => void }) {
++function AcademyProblem({ error, onClose, onRetry }: { error: Error; onClose: () => void; onRetry: () => void }) {
+   const [cleared, setCleared] = useState(false);
+   return (
+     <AcademyShell onClose={onClose}>
+@@ -97,6 +97,12 @@ function AcademyProblem({ onClose, onRetry }: { onClose: () => void; onRetry: ()
+           {cleared ? 'Started fresh' : 'Start fresh'}
+         </button>
+       </div>
++      <details className="text-left text-xs text-ink-soft">
++        <summary className="cursor-pointer text-center font-bold">Details for grown-ups</summary>
++        <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-white p-3 font-mono">
++          {`${error.name}: ${error.message}\n${navigator.userAgent}\n${(error.stack ?? '').split('\n').slice(0, 6).join('\n')}`}
++        </pre>
++      </details>
+     </AcademyShell>
+   );
+ }
+@@ -325,7 +331,7 @@ export default function App() {
+         {guideOpen && <GrownUpsGuide onClose={() => setGuideOpen(false)} />}
+         {preview && <PreviewModal item={preview} onClose={() => setPreview(null)} />}
+         {academyOpen && (
+-          <ErrorBoundary fallback={(_, reset) => <AcademyProblem onClose={() => setAcademyOpen(false)} onRetry={reset} />}>
++          <ErrorBoundary fallback={(error, reset) => <AcademyProblem error={error} onClose={() => setAcademyOpen(false)} onRetry={reset} />}>
+             <EducationalSection onClose={() => setAcademyOpen(false)} />
+           </ErrorBoundary>
+         )}
