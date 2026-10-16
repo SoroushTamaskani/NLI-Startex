@@ -122,7 +122,7 @@ export function PendingCard({ pending, onStop }: { pending: PendingCheck; onStop
   const current = steps.findIndex(s => s.key === pending.stage);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
+    <div className="rise-in flex justify-start">
       <div className="w-full max-w-md rounded-[28px] rounded-tl-md border-4 border-cream-200 bg-white px-5 py-4 shadow-bubble" role="status" aria-live="polite">
         <div className="flex items-center gap-3">
           <motion.span
@@ -167,6 +167,6 @@ export function PendingCard({ pending, onStop }: { pending: PendingCheck; onStop
         </ol>
         <p className="mt-4 rounded-2xl bg-cream-100 px-3 py-2 text-xs text-ink-soft">{WAITING_TIPS[tip]}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }

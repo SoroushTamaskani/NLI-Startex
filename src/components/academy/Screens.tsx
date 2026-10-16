@@ -259,7 +259,7 @@ export function LessonView({
       </div>
 
       {slide && (
-        <motion.div key={step} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
+        <div key={step} className="rise-in space-y-5">
           <Panel className="space-y-4 text-center sm:p-8">
             <span className={cn('mx-auto flex h-24 w-24 items-center justify-center rounded-[32px] text-6xl', lesson.color)} aria-hidden>
               {slide.emoji}
@@ -281,7 +281,7 @@ export function LessonView({
               {step === slides - 1 ? 'Quick check ✏️' : 'Next'} <ArrowRight size={20} aria-hidden />
             </button>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {question && (
@@ -373,7 +373,7 @@ export function RoundResult({
     <div className="w-full space-y-6 text-center">
       {summary.stars === 3 && <Confetti />}
       <div className="space-y-3">
-        <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
+        <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
           <Stars count={summary.stars} size={48} />
         </motion.div>
         <h2 className="font-display text-4xl font-bold text-ink">{title}</h2>

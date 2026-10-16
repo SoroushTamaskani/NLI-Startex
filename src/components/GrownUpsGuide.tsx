@@ -1,5 +1,4 @@
 import { X } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import { useEscape } from '../hooks/useMisc';
 
@@ -38,12 +37,9 @@ export function GrownUpsGuide({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[115] flex items-end justify-center p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="grownups-title">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-ink/50 backdrop-blur-sm" />
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 24 }}
-        className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[28px] border-4 border-cream-200 bg-white shadow-2xl sm:rounded-[28px]"
+      <div onClick={onClose} className="absolute inset-0 bg-ink/50 backdrop-blur-sm" aria-hidden />
+      <div
+        className="rise-in relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[28px] border-4 border-cream-200 bg-white shadow-2xl sm:rounded-[28px]"
       >
         <div className="flex items-start justify-between gap-3 border-b-4 border-cream-200 bg-cream-100 px-5 py-4">
           <div>
@@ -69,7 +65,7 @@ export function GrownUpsGuide({ onClose }: { onClose: () => void }) {
             </section>
           ))}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

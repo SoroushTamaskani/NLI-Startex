@@ -32,7 +32,7 @@ export function EmptyState({
   onOpenGuide: () => void;
 }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto flex max-w-2xl flex-col items-center gap-8 py-4 text-center sm:py-8">
+    <div className="rise-in mx-auto flex max-w-2xl flex-col items-center gap-8 py-4 text-center sm:py-8">
       <div className="flex flex-col items-center">
         <div className="relative">
           <motion.div
@@ -100,6 +100,6 @@ export function EmptyState({
       <button type="button" onClick={onOpenGuide} className="text-xs font-bold text-ink-soft underline decoration-dotted underline-offset-4 hover:text-ink">
         Parent or teacher? Read how NLI works
       </button>
-    </motion.div>
+    </div>
   );
 }

@@ -274,10 +274,7 @@ export default function EducationalSection({ onClose }: { onClose: () => void })
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
       className="fixed inset-0 z-[100] flex flex-col overflow-hidden bg-cream font-sans"
       role="dialog"
       aria-modal="true"
@@ -322,17 +319,12 @@ export default function EducationalSection({ onClose }: { onClose: () => void })
 
       <main ref={mainRef} className="custom-scrollbar flex-1 overflow-y-auto">
         <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col items-center px-4 py-6 sm:px-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={view.name === 'round' ? `round-${view.key}` : view.name === 'lesson' ? `lesson-${view.lesson.id}` : view.name}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              className="w-full"
-            >
-              {view.name === 'card' ? <CardScreen progress={progress} onReset={() => setProgress(emptyProgress())} /> : body}
-            </motion.div>
-          </AnimatePresence>
+          <div
+            key={view.name === 'round' ? `round-${view.key}` : view.name === 'lesson' ? `lesson-${view.lesson.id}` : view.name}
+            className="rise-in w-full"
+          >
+            {view.name === 'card' ? <CardScreen progress={progress} onReset={() => setProgress(emptyProgress())} /> : body}
+          </div>
         </div>
       </main>
 
@@ -357,6 +349,6 @@ export default function EducationalSection({ onClose }: { onClose: () => void })
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

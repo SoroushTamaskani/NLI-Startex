@@ -4,12 +4,13 @@
  */
 
 import { Paperclip } from 'lucide-react';
-import { AnimatePresence, MotionConfig } from 'motion/react';
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type DragEvent } from 'react';
+import { MotionConfig } from 'motion/react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import type { PreviewItem } from './components/AttachmentView';
 import { Header, HealthBanner, Toasts } from './components/Chrome';
 import { Composer } from './components/Composer';
 import { EmptyState } from './components/EmptyState';
+import { ErrorBoundary, retryImport } from './components/ErrorBoundary';
 import { GrownUpsGuide } from './components/GrownUpsGuide';
 import { AssistantView, PendingCard, UserBubble } from './components/Messages';
 import { PreviewModal } from './components/PreviewModal';
@@ -25,7 +26,7 @@ import { newId } from './lib/ids';
 import type { AssistantMessage, Audience, CheckMode, Message, UserMessage } from './types';
 
 // Truth Academy is a separate screen; load it only when someone opens it.
-const EducationalSection = lazy(() => import('./components/EducationalSection'));
+const EducationalSection = lazy(() => retryImport(() => import('./components/EducationalSection')));
 
 const MODE_KEY = 'nli_mode';
 const AUDIENCE_KEY = 'nli_audience';
@@ -53,6 +54,66 @@ function loadMode(): CheckMode {
 function loadAudience(): Audience {
   const saved = readSetting(AUDIENCE_KEY);
   return saved === 'young' || saved === 'teen' ? saved : 'kid';
+}
+
+/** Full-screen shell shown while Truth Academy loads, so the button always does something visible. */
+function AcademyShell({ children, onClose }: { children: ReactNode; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-cream p-6" role="dialog" aria-modal="true" aria-label="Truth Academy">
+      <button type="button" onClick={onClose} className="absolute right-4 top-4 rounded-2xl px-4 py-2 font-bold text-brand-700 hover:bg-cream-100">
+        Close ✕
+      </button>
+      <div className="max-w-md space-y-4 text-center">{children}</div>
+    </div>
+  );
+}
+
+function AcademyLoading({ onClose }: { onClose: () => void }) {
+  return (
+    <AcademyShell onClose={onClose}>
+      <p className="animate-bounce text-6xl" aria-hidden>
+        🎓
+      </p>
+      <p className="font-display text-2xl font-semibold text-ink" role="status">
+        Opening Truth Academy…
+      </p>
+    </AcademyShell>
+  );
+}
+
+function AcademyProblem({ onClose, onRetry }: { onClose: () => void; onRetry: () => void }) {
+  const [cleared, setCleared] = useState(false);
+  return (
+    <AcademyShell onClose={onClose}>
+      <p className="text-6xl" aria-hidden>
+        🛠️
+      </p>
+      <h2 className="font-display text-2xl font-bold text-ink">Truth Academy hit a bump</h2>
+      <p className="text-ink-soft">
+        Something went wrong while opening it. Try again. If it keeps happening, starting fresh usually fixes it (this resets academy points and badges only).
+      </p>
+      <div className="flex flex-col justify-center gap-2 sm:flex-row">
+        <button type="button" onClick={onRetry} className="rounded-2xl bg-brand-500 px-5 py-3 font-bold text-white shadow-bubble hover:bg-brand-600">
+          Try again
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              ['nli_academy_v2', 'nli_points', 'nli_ai_spots', 'nli_badges'].forEach(key => localStorage.removeItem(key));
+            } catch {
+              // Nothing saved to clear.
+            }
+            setCleared(true);
+            onRetry();
+          }}
+          className="rounded-2xl border-2 border-cream-300 bg-white px-5 py-3 font-bold text-ink hover:bg-cream-100"
+        >
+          {cleared ? 'Started fresh' : 'Start fresh'}
+        </button>
+      </div>
+    </AcademyShell>
+  );
 }
 
 export default function App() {
@@ -276,11 +337,15 @@ export default function App() {
 
         <Toasts toasts={toasts} onDismiss={dismiss} />
 
-        <AnimatePresence>{guideOpen && <GrownUpsGuide onClose={() => setGuideOpen(false)} />}</AnimatePresence>
-        <AnimatePresence>{preview && <PreviewModal item={preview} onClose={() => setPreview(null)} />}</AnimatePresence>
-        <Suspense fallback={null}>
-          <AnimatePresence>{academyOpen && <EducationalSection onClose={() => setAcademyOpen(false)} />}</AnimatePresence>
-        </Suspense>
+        {guideOpen && <GrownUpsGuide onClose={() => setGuideOpen(false)} />}
+        {preview && <PreviewModal item={preview} onClose={() => setPreview(null)} />}
+        {academyOpen && (
+          <ErrorBoundary fallback={(_, reset) => <AcademyProblem onClose={() => setAcademyOpen(false)} onRetry={reset} />}>
+            <Suspense fallback={<AcademyLoading onClose={() => setAcademyOpen(false)} />}>
+              <EducationalSection onClose={() => setAcademyOpen(false)} />
+            </Suspense>
+          </ErrorBoundary>
+        )}
       </div>
     </MotionConfig>
   );

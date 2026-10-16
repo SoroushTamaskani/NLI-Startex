@@ -1,5 +1,4 @@
 import { ChevronLeft, ChevronRight, Download, X, ZoomIn, ZoomOut } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { useEscape } from '../hooks/useMisc';
 import type { PreviewItem } from './AttachmentView';
@@ -66,12 +65,9 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-8" role="dialog" aria-modal="true" aria-label={item.name}>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-ink/60 backdrop-blur-sm" />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 16 }}
-        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border-4 border-brand-500 bg-white shadow-2xl"
+      <div onClick={onClose} className="absolute inset-0 bg-ink/60 backdrop-blur-sm" aria-hidden />
+      <div
+        className="rise-in relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border-4 border-brand-500 bg-white shadow-2xl"
       >
         <div className="flex items-center justify-between gap-3 border-b-4 border-cream-200 bg-cream-100 px-4 py-3">
           <h2 className="min-w-0 truncate font-display text-lg font-semibold text-ink">{item.name}</h2>
@@ -87,7 +83,7 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-auto">{body}</div>
-      </motion.div>
+      </div>
     </div>
   );
 }

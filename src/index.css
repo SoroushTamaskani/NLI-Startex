@@ -183,3 +183,26 @@ h4 {
 .flash {
   animation: flash-highlight 1.6s ease-out;
 }
+
+/*
+ * Entrances only move things; they never start invisible. If a browser or
+ * embedded viewer pauses animations, every screen is still fully visible.
+ */
+@keyframes rise-in {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
+}

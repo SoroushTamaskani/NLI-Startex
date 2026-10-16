@@ -1,5 +1,4 @@
 import { ArrowRight, Lightbulb, ThumbsDown, ThumbsUp } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useState } from 'react';
 import { cn } from '../../lib/utils';
 import { SpeakButton } from '../SpeakButton';
@@ -87,10 +86,8 @@ export function QuestionCard({
           ))}
 
         {result && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={cn('flex items-start gap-3 rounded-[22px] border-4 p-4 text-ink', result.correct ? 'border-kids-green bg-kids-green/15' : 'border-kids-pink bg-kids-pink/10')}
+          <div
+            className={cn('rise-in flex items-start gap-3 rounded-[22px] border-4 p-4 text-ink', result.correct ? 'border-kids-green bg-kids-green/15' : 'border-kids-pink bg-kids-pink/10')}
             role="status"
           >
             <span className="rounded-full bg-white p-2 shadow-sm">
@@ -103,7 +100,7 @@ export function QuestionCard({
               </p>
               <p className="text-ink-soft">{result.feedback}</p>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
